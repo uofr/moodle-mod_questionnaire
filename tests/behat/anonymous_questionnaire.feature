@@ -22,7 +22,6 @@ Feature: Questionnaires can be anonymous
     And I am on "Course 1" course homepage
     And I am on the "Anonymous questionnaire" "questionnaire activity editing" page
     And I expand all fieldsets
-    And I should see "Response options"
     And I set the field "id_respondenttype" to "anonymous"
     And I press "Save and display"
     Then I should see "Anonymous questionnaire"
@@ -44,6 +43,6 @@ Feature: Questionnaires can be anonymous
     And I press "Submit questionnaire"
     Then I should see "Thank you for completing this Questionnaire."
     And I press "Continue"
-    Then I should see "Your response"
+    Then I should see "View your response(s)"
     And I should see "Anonymous questionnaire"
     And I should see "Respondent: - Anonymous -"

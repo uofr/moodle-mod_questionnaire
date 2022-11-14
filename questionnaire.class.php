@@ -1249,22 +1249,22 @@ class questionnaire {
             $this->survey_render($formdata, $formdata->sec, $msg);
             $controlbuttons = [];
             if ($formdata->sec > 1) {
-                $controlbuttons['prev'] = ['type' => 'submit', 'class' => 'btn btn-secondary',
+                $controlbuttons['prev'] = ['type' => 'submit', 'class' => 'btn btn-secondary control-button-prev',
                     'value' => '<< '.get_string('previouspage', 'questionnaire')];
             }
             if ($this->resume) {
-                $controlbuttons['resume'] = ['type' => 'submit', 'class' => 'btn btn-secondary',
-                    'value' => get_string('save', 'questionnaire')];
+                $controlbuttons['resume'] = ['type' => 'submit', 'class' => 'btn btn-secondary control-button-save',
+                    'value' => get_string('save_and_exit', 'questionnaire')];
             }
 
             // Add a 'hidden' variable for the mod's 'view.php', and use a language variable for the submit button.
 
             if ($formdata->sec == $numsections) {
                 $controlbuttons['submittype'] = ['type' => 'hidden', 'value' => 'Submit Survey'];
-                $controlbuttons['submit'] = ['type' => 'submit', 'class' => 'btn btn-primary',
+                $controlbuttons['submit'] = ['type' => 'submit', 'class' => 'btn btn-primary control-button-submit',
                     'value' => get_string('submitsurvey', 'questionnaire')];
             } else {
-                $controlbuttons['next'] = ['type' => 'submit', 'class' => 'btn btn-secondary',
+                $controlbuttons['next'] = ['type' => 'submit', 'class' => 'btn btn-secondary control-button-next',
                     'value' => get_string('nextpage', 'questionnaire').' >>'];
             }
             $this->page->add_to_page('controlbuttons', $this->renderer->complete_controlbuttons($controlbuttons));
@@ -1848,7 +1848,11 @@ class questionnaire {
             }
             if (!$this->questions[$questionid]->response_complete($formdata)) {
                 $missing++;
-                $strmissing .= get_string('num', 'questionnaire').$qnum.'. ';
+                $strnum = get_string('num', 'questionnaire').$qnum.'. ';
+                $strmissing .= $strnum;
+                // Pop-up   notification at the point of the error.
+                $strnoti = get_string('missingquestion', 'questionnaire').$strnum;
+                $this->questions[$questionid]->add_notification($strnoti);
             }
             if (!$this->questions[$questionid]->response_valid($formdata)) {
                 $wrongformat++;
@@ -2528,7 +2532,7 @@ class questionnaire {
      * @param string $url
      */
     private function response_goto_saved($url) {
-        global $CFG;
+        global $CFG, $USER;
         $resumesurvey = get_string('resumesurvey', 'questionnaire');
         $savedprogress = get_string('savedprogress', 'questionnaire', '<strong>'.$resumesurvey.'</strong>');
 
@@ -2537,6 +2541,21 @@ class questionnaire {
         $this->page->add_to_page('respondentinfo',
             $this->renderer->homelink($CFG->wwwroot.'/course/view.php?id='.$this->course->id,
                 get_string("backto", "moodle", $this->course->fullname)));
+
+        if ($this->resume) {
+            $message = $this->user_access_messages($USER->id, true);
+            if ($message === false) {
+                if ($this->user_can_take($USER->id)) {
+                    if ($this->questions) { // Sanity check.
+                        if ($this->user_has_saved_response($USER->id)) {
+                            $this->page->add_to_page('respondentinfo',
+                                $this->renderer->homelink($CFG->wwwroot . '/mod/questionnaire/complete.php?' .
+                                    'id=' . $this->cm->id . '&resume=1', $resumesurvey));
+                        }
+                    }
+                }
+            }
+        }
         return;
     }
 
@@ -3867,7 +3886,7 @@ class questionnaire {
                     }
                     $sectionheading = $fbsection->sectionheading;
                     $imageid = $fbsection->id;
-                    $chartlabels [$section] = $fbsection->sectionlabel;
+                    $chartlabels[$section] = $fbsection->sectionlabel;
                 }
             }
             foreach ($scorecalculation as $qid => $key) {
@@ -3979,9 +3998,19 @@ class questionnaire {
         }
 
         if ($usergraph && $this->survey->chart_type) {
-            $this->page->add_to_page('feedbackcharts',
-                draw_chart($feedbacktype = 'sections', array_values($chartlabels), $groupname,
-                    $allresponses, $this->survey->chart_type, array_values($scorepercent), array_values($allscorepercent), $sectionlabel));
+            $this->page->add_to_page(
+                'feedbackcharts',
+                draw_chart(
+                    'sections',
+                    array_values($chartlabels),
+                    $groupname,
+                    $allresponses,
+                    $this->survey->chart_type,
+                    array_values($scorepercent),
+                    array_values($allscorepercent),
+                    $sectionlabel
+                )
+            );
         }
         if ($this->survey->feedbackscores) {
             $this->page->add_to_page('feedbackscores', html_writer::table($table));
