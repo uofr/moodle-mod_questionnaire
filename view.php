@@ -64,8 +64,6 @@ $questionnaire->add_page(new \mod_questionnaire\output\viewpage());
 $PAGE->set_title(format_string($questionnaire->name));
 $PAGE->set_heading(format_string($course->fullname));
 
-echo $questionnaire->renderer->header();
-// No need to print out intro or name in Moodle 4 and above.
 
 $cm = $questionnaire->cm;
 $currentgroupid = groups_get_activity_group($cm);
@@ -76,24 +74,43 @@ if (!groups_is_member($currentgroupid, $USER->id)) {
 $message = $questionnaire->user_access_messages($USER->id);
 if ($message !== false) {
     $questionnaire->page->add_to_page('message', $message);
+	
+	
 } else if ($questionnaire->user_can_take($USER->id)) {
     if ($questionnaire->questions) { // Sanity check.
         if (!$questionnaire->user_has_saved_response($USER->id)) {
+			
+			$answer_url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/complete.php?' .
+                'id=' . $questionnaire->cm->id);
+			redirect($answer_url);
+			/*
             $questionnaire->page->add_to_page('complete',
                 '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?' .
                 'id=' . $questionnaire->cm->id) . '" class="btn btn-primary">' .
                 get_string('answerquestions', 'questionnaire') . '</a>');
+			*/
         } else {
+			
+			$resume_url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/complete.php?' .
+                'id=' . $questionnaire->cm->id.'&resume=1');
+			redirect($answer_url);
+			
+			/*
             $resumesurvey = get_string('resumesurvey', 'questionnaire');
             $questionnaire->page->add_to_page('complete',
                 '<a href="'.$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/complete.php?' .
                 'id='.$questionnaire->cm->id.'&resume=1').'" title="'.$resumesurvey.
                 '" class="btn btn-primary">'.$resumesurvey.'</a>');
+			*/
         }
     } else {
         $questionnaire->page->add_to_page('message', get_string('noneinuse', 'questionnaire'));
     }
 }
+
+
+echo $questionnaire->renderer->header();
+// No need to print out intro or name in Moodle 4 and above.
 
 if ($questionnaire->capabilities->editquestions && !$questionnaire->questions && $questionnaire->is_active()) {
     $questionnaire->page->add_to_page('complete',
@@ -133,7 +150,7 @@ if ($questionnaire->capabilities->readownresponses && ($usernumresp > 0)) {
     }
     $questionnaire->page->add_to_page('yourresponse',
         '<a href="' .$CFG->wwwroot.htmlspecialchars('/mod/questionnaire/myreport.php?' . $argstr).
-        '" class="btn btn-primary">' . $titletext . '</a>');
+        '" class="btn btn-primary mt-3">' . $titletext . '</a>');
 }
 
 if ($questionnaire->can_view_all_responses($usernumresp)) {
