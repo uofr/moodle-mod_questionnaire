@@ -76,6 +76,11 @@ if ($message !== false) {
     $questionnaire->page->add_to_page('message', $message);
 	
 	
+	$content = format_text('{nextactivity}');
+	
+	$questionnaire->page->add_to_page('message', $content);
+	
+	
 } else if ($questionnaire->user_can_take($USER->id)) {
     if ($questionnaire->questions) { // Sanity check.
         if (!$questionnaire->user_has_saved_response($USER->id)) {
@@ -93,7 +98,7 @@ if ($message !== false) {
 			
 			$resume_url = new moodle_url($CFG->wwwroot.'/mod/questionnaire/complete.php?' .
                 'id=' . $questionnaire->cm->id.'&resume=1');
-			redirect($answer_url);
+			redirect($resume_url);
 			
 			/*
             $resumesurvey = get_string('resumesurvey', 'questionnaire');
