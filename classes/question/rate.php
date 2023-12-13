@@ -299,6 +299,10 @@ class rate extends question {
             }
             $col['colwidth'] = $colwidth;
             $col['coltext'] = $str.$val;
+			
+			$tmpchoices = array_keys($this->choices);
+			
+			$col['forlabel'] = 'q'."{$this->id}_{$tmpchoices[0]}_$j";
             $collabel[$j] = $col['coltext'];
             $choicetags->qelements['headerrow']['cols'][] = $col;
         }
