@@ -559,8 +559,13 @@ class questionnaire {
             $message = get_string("alreadyfilled", "questionnaire", $msgstring);
         }
 
-        if (($message !== false) && $asnotification) {
-            $message = $this->renderer->notification($message, \core\output\notification::NOTIFY_ERROR);
+        if ($message !== false) {
+			
+			if ($asnotification) {
+				$message = $this->renderer->notification($message, \core\output\notification::NOTIFY_ERROR);
+			} else {
+        		$message = '<div class="alert alert-info">'.$message.'</div>';
+			}
         }
 
         return $message;
@@ -2526,11 +2531,95 @@ class questionnaire {
         if ($this->capabilities->readownresponses) {
             $url = new moodle_url('myreport.php', ['id' => $this->cm->id, 'instance' => $this->cm->instance, 'user' => $USER->id,
                 'byresponse' => 0, 'action' => 'vresp']);
-            $this->page->add_to_page('continue', $this->renderer->single_button($url, get_string('continue')));
+            $this->page->add_to_page('continue', $this->renderer->single_button($url, get_string('viewmyresponse')));
         } else {
-            $url = new moodle_url('/course/view.php', ['id' => $this->course->id]);
-            $this->page->add_to_page('continue', $this->renderer->single_button($url, get_string('continue')));
+			
+			
+			
+            //$url = new moodle_url('/course/view.php', ['id' => $this->course->id]);
+            //$this->page->add_to_page('continue', $this->renderer->single_button($url, get_string('continue')));
+			
+			$content = format_text('{nextactivity}');
+			$this->page->add_to_page('continue',$content);
+			
         }
+		
+		
+		
+		
+		/*
+        // Get a list of all the activities in the course.
+        $modules = get_fast_modinfo($this->course->id)->get_cms();
+
+        // Put the modules into an array in order by the position they are shown in the course.
+        $mods = [];
+        $activitylist = [];
+        foreach ($modules as $module) {
+            // Only add activities the user can access, aren't in stealth mode and have a url (eg. mod_label does not).
+            if (!$module->uservisible || $module->is_stealth() || empty($module->url)) {
+                continue;
+            }
+            $mods[$module->id] = $module;
+
+            // No need to add the current module to the list for the activity dropdown menu.
+            if ($module->id == $this->page->cm->id) {
+                continue;
+            }
+            // Module name.
+            $modname = $module->get_formatted_name();
+            // Display the hidden text if necessary.
+            if (!$module->visible) {
+                $modname .= ' ' . get_string('hiddenwithbrackets');
+            }
+            // Module URL.
+            $linkurl = new moodle_url($module->url, array('forceview' => 1));
+            // Add module URL (as key) and name (as value) to the activity list array.
+            $activitylist[$linkurl->out(false)] = $modname;
+        }
+
+        $nummods = count($mods);
+
+        // If there is only one mod then do nothing.
+        if ($nummods == 1) {
+            return '';
+        }
+
+        // Get an array of just the course module ids used to get the cmid value based on their position in the course.
+        $modids = array_keys($mods);
+
+        // Get the position in the array of the course module we are viewing.
+        $position = array_search($this->page->cm->id, $modids);
+
+        $prevmod = null;
+        $nextmod = null;
+
+        // Check if we have a previous mod to show.
+        if ($position > 0) {
+            $prevmod = $mods[$modids[$position - 1]];
+			
+			$linkurl = $prevmod->url;
+			$linkname = $prevmod->get_formatted_name();
+			$prevlink = new action_link($linkurl, $linkname);
+		
+			$this->page->add_to_page('continue', $prevlink);
+        }
+
+        // Check if we have a next mod to show.
+        if ($position < ($nummods - 1)) {
+            $nextmod = $mods[$modids[$position + 1]];
+			
+			$linkurl = $nextmod->url;
+			$linkname = $nextmod->get_formatted_name();
+			$nextlink = new action_link($linkurl, $linkname);
+		
+		
+			$this->page->add_to_page('continue', $this->renderer->action_link(get_string('continue'),$nextlink));
+        }
+		
+		*/
+		
+		
+		
         return;
     }
 
