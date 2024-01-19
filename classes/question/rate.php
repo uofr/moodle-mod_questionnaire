@@ -252,7 +252,8 @@ class rate extends question {
         } else {
             $width = '59%';
             $colwidth = (40 / $this->length).'%';
-            $textalign = 'left';
+			//change alignment to right for our purposes
+            $textalign = 'right';
         }
 
         $choicetags->qelements['headerrow']['col1width'] = $width;
