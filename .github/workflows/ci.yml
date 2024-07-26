@@ -4,6 +4,16 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: 'ubuntu-latest'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.0'
+            moodle-branch: 'master'
+            database: 'mariadb'
+          - php: '8.0'
+            moodle-branch: 'master'
+            database: 'pgsql'
 
     services:
       postgres:
