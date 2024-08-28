@@ -485,7 +485,6 @@ switch ($action) {
 
     case 'dfs':
         require_capability('mod/questionnaire:downloadresponses', $context);
-        require_once($CFG->dirroot . '/lib/dataformatlib.php');
         // Use the questionnaire name as the file name. Clean it and change any non-filename characters to '_'.
         $name = clean_param($questionnaire->name, PARAM_FILE);
         $name = preg_replace("/[^A-Z0-9]+/i", "_", trim($name));
@@ -507,12 +506,7 @@ switch ($action) {
         // Check if email report was selected.
         $emailreport = optional_param('emailreport', '', PARAM_ALPHA);
         if (empty($emailreport)) {
-            // In 3.9 forward, download_as_dataformat is replaced by \core\dataformat::download_data.
-            if (method_exists('\\core\\dataformat', 'download_data')) {
-                \core\dataformat::download_data($name, $dataformat, $columns, $output);
-            } else {
-                download_as_dataformat($name, $dataformat, $columns, $output);
-            }
+            \core\dataformat::download_data($name, $dataformat, $columns, $output);
         } else {
             // Emailreport button selected.
             if (get_config('questionnaire', 'allowemailreporting') && (!empty($emailroles) || !empty($emailextra))) {
